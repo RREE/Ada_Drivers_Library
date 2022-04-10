@@ -34,52 +34,42 @@ package HAL.I2C is
 
    type I2C_Status is
      (Ok,
-      Err_Error,
-      Err_Timeout,
+      Error,
+      Timeout,
+      No_Connection,
       Busy);
 
    subtype I2C_Data is UInt8_Array;
 
-   type I2C_Memory_Address_Size is
-     (Memory_Size_8b,
-      Memory_Size_16b);
+   -- 7 and 10-bit addressess are distinct types
+   subtype I2C_7bit_Address is UInt7 range 8 .. 16#77#;
+   subtype I2C_Address is I2C_7bit_Address;
 
-   subtype I2C_Address is UInt10;
+   -- If we want to support 10-bit addresses we have to overload all
+   -- routines with 7 and 10 bit or add a parameter that tells us, if
+   -- we have to handle the given value as a 7 or 10 bit address. The
+   -- existing (April 2022) interface cannot distinguish between the
+   -- two address spaces.
+   subtype I2C_10bit_Address is UInt10;
 
-   type I2C_Port is limited interface;
 
-   type Any_I2C_Port is access all I2C_Port'Class;
+   --
+   --  Communication
+   --
+   --  Each slave device on the bus should have a unique address. The
+   --  communication starts with the Start condition, followed by the
+   --  7-bit slave address and the data direction bit. If this bit is
+   --  0 then the master will write to the slave device. Otherwise, if
+   --  the data direction bit is 1, the master will read from slave
+   --  device. After the slave address and the data direction is sent,
+   --  the master can continue with reading or writing. The
+   --  communication is ended with the Stop condition which also
+   --  signals that the I2C bus is free. If the master needs to
+   --  communicate with other slaves it can generate a repeated start
+   --  with another slave address without generation Stop condition.
+   --
+   --  All the bytes are transferred with the MSB bit shifted first.
 
-   procedure Master_Transmit
-     (This    : in out I2C_Port;
-      Addr    : I2C_Address;
-      Data    : I2C_Data;
-      Status  : out I2C_Status;
-      Timeout : Natural := 1000) is abstract;
-
-   procedure Master_Receive
-     (This    : in out I2C_Port;
-      Addr    : I2C_Address;
-      Data    : out I2C_Data;
-      Status  : out I2C_Status;
-      Timeout : Natural := 1000) is abstract;
-
-   procedure Mem_Write
-     (This          : in out I2C_Port;
-      Addr          : I2C_Address;
-      Mem_Addr      : UInt16;
-      Mem_Addr_Size : I2C_Memory_Address_Size;
-      Data          : I2C_Data;
-      Status        : out I2C_Status;
-      Timeout       : Natural := 1000) is abstract;
-
-   procedure Mem_Read
-     (This          : in out I2C_Port;
-      Addr          : I2C_Address;
-      Mem_Addr      : UInt16;
-      Mem_Addr_Size : I2C_Memory_Address_Size;
-      Data          : out I2C_Data;
-      Status        : out I2C_Status;
-      Timeout       : Natural := 1000) is abstract;
+   --  Explanations are from https://i2c.info/i2c-bus-specification
 
 end HAL.I2C;
