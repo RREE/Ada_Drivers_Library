@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                     Copyright (C) 2015-2016, AdaCore                     --
+--                     Copyright (C) 2015-2016, 2022, AdaCore               --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -43,15 +43,14 @@ package HAL.I2C is
 
    -- 7 and 10-bit addressess are distinct types
    subtype I2C_7bit_Address is UInt7 range 8 .. 16#77#;
-   subtype I2C_Address is I2C_7bit_Address;
 
-   -- If we want to support 10-bit addresses we have to overload all
-   -- routines with 7 and 10 bit or add a parameter that tells us, if
-   -- we have to handle the given value as a 7 or 10 bit address. The
-   -- existing (April 2022) interface cannot distinguish between the
-   -- two address spaces.
+   -- 8-bit addresses are actually 7-bit addresses shifted by 1 bit
+   subtype I2C_8bit_Address is Uint8 range 16#10# .. 16#EE#;
+
    subtype I2C_10bit_Address is UInt10;
 
+   subtype I2C_Address is I2C_8Bit_Address;
+   -- for backward compatibility to hal-0.3.0
 
    --
    --  Communication

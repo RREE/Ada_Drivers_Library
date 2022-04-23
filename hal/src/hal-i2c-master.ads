@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                     Copyright (C) 2015-2016, AdaCore                     --
+--                     Copyright (C) 2015-2016, 2022, AdaCore               --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -57,17 +57,24 @@ package HAL.I2C.Master is
    -- Success or failure is reported in Status.
    procedure Transmit
      (This    : in out I2C_Master_Port;
-      Addr    : I2C_Address;
+      Addr    : I2C_7bit_Address;
       Data    : I2C_Data;
       Status  : out I2C_Status;
       Timeout : Natural := 1000) is abstract;
 
    procedure Transmit
-     (This    : in out I2C_Master_Port;
-      Addr    : I2C_10bit_Address;
-      Data    : I2C_Data;
-      Status  : out I2C_Status;
-      Timeout : Natural := 1000) is abstract;
+     (This      : in out I2C_Master_Port;
+      Addr      : I2C_8bit_Address;
+      Data      : I2C_Data;
+      Status    : out I2C_Status;
+      Timeout   : Natural := 1000) is abstract;
+
+   procedure Transmit
+     (This      : in out I2C_Master_Port;
+      Addr      : I2C_10bit_Address;
+      Data      : I2C_Data;
+      Status    : out I2C_Status;
+      Timeout   : Natural := 1000) is abstract;
 
    -- Create I2C start condition.  Receive Data from the device
    -- (slave) at I2C_Address through the port This.  The number of
@@ -75,7 +82,14 @@ package HAL.I2C.Master is
    -- I2C stop condition.  Success or failure is reported in Status.
    procedure Receive
      (This    : in out I2C_Master_Port;
-      Addr    : I2C_Address;
+      Addr    : I2C_7bit_Address;
+      Data    : out I2C_Data;
+      Status  : out I2C_Status;
+      Timeout : Natural := 1000) is abstract;
+
+   procedure Receive
+     (This    : in out I2C_Master_Port;
+      Addr    : I2C_8bit_Address;
       Data    : out I2C_Data;
       Status  : out I2C_Status;
       Timeout : Natural := 1000) is abstract;
@@ -95,7 +109,15 @@ package HAL.I2C.Master is
    -- reported in Status.
   procedure Transmit_And_Receive
      (This      : in out I2C_Master_Port;
-      Addr      : I2C_Address;
+      Addr      : I2C_7Bit_Address;
+      Send_Data : I2C_Data;
+      Recv_Data : out I2C_Data;
+      Status    : out I2C_Status;
+      Timeout   : Natural := 1000) is abstract;
+
+  procedure Transmit_And_Receive
+     (This      : in out I2C_Master_Port;
+      Addr      : I2C_8Bit_Address;
       Send_Data : I2C_Data;
       Recv_Data : out I2C_Data;
       Status    : out I2C_Status;
@@ -132,15 +154,6 @@ package HAL.I2C.Master is
       Status        : out I2C_Status;
       Timeout       : Natural := 1000) is abstract;
 
-   procedure Mem_Write
-     (This          : in out I2C_Master_Port;
-      Addr          : I2C_10bit_Address;
-      Mem_Addr      : UInt16;
-      Mem_Addr_Size : I2C_Memory_Address_Size;
-      Data          : I2C_Data;
-      Status        : out I2C_Status;
-      Timeout       : Natural := 1000) is abstract;
-
    -- Create I2C start condition.  First send Mem_Addr to the device
    -- (slave).  Then receive Data from the device. The number of bytes
    -- to be received is determined by the length of Data.  Ends with
@@ -148,15 +161,6 @@ package HAL.I2C.Master is
    procedure Mem_Read
      (This          : in out I2C_Master_Port;
       Addr          : I2C_Address;
-      Mem_Addr      : UInt16;
-      Mem_Addr_Size : I2C_Memory_Address_Size;
-      Data          : out I2C_Data;
-      Status        : out I2C_Status;
-      Timeout       : Natural := 1000) is abstract;
-
-   procedure Mem_Read
-     (This          : in out I2C_Master_Port;
-      Addr          : I2C_10bit_Address;
       Mem_Addr      : UInt16;
       Mem_Addr_Size : I2C_Memory_Address_Size;
       Data          : out I2C_Data;
