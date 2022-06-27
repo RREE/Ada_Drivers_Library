@@ -36,13 +36,14 @@ package HAL.I2C.Master is
 
    type Any_I2C_Master_Port is access all I2C_Master_Port'Class;
 
-   -- We recommend to provide a procedure named Configure for
-   -- initialisation of the I2C port
+   --  We recommend to provide a procedure named Configure for
+   --  initialisation of the I2C port
    --
-   -- procedure Configure (This : in out My_Derived_I2C_Port, ...)
+   --  procedure Configure (This : in out My_Derived_I2C_Port,
+   --                       Baudrate : Hertz;
+   --                       ...);
    --
 
-   --
    --  Start and Stop Condition
    --
    --  Each I2C command initiated by master device starts with a START
@@ -50,56 +51,58 @@ package HAL.I2C.Master is
    --  SCL has to be high. A high to low transition of SDA is
    --  considered as START and a low to high transition as STOP.
 
-
    -- Create I2C start condition.  Send the Data to the device (slave)
    -- at I2C_Address through the port This.  The number of bytes is
-   -- determined by the length of Data.  Ends with I2C stop condition.
-   -- Success or failure is reported in Status.
+   -- determined by the length of Data.  Ends with I2C stop condition
+   -- if Stop is true.  Success or failure is reported in Status.
    procedure Transmit
      (This    : in out I2C_Master_Port;
       Addr    : I2C_7bit_Address;
       Data    : I2C_Data;
       Status  : out I2C_Status;
-      Timeout : Natural := 1000) is abstract;
+      Timeout : Natural := 1000;  --  needed?, I haven't seen that in other APIs (except Python)
+      Stop    : Boolean := True   --  true: send Stop sequence, release bus after transmission
+                                  --  false: do not send Stop sequence, keep bus busy
+     ) is abstract;
 
    procedure Transmit
-     (This      : in out I2C_Master_Port;
-      Addr      : I2C_8bit_Address;
-      Data      : I2C_Data;
-      Status    : out I2C_Status;
-      Timeout   : Natural := 1000) is abstract;
-
-   procedure Transmit
-     (This      : in out I2C_Master_Port;
-      Addr      : I2C_10bit_Address;
-      Data      : I2C_Data;
-      Status    : out I2C_Status;
-      Timeout   : Natural := 1000) is abstract;
+     (This    : in out I2C_Master_Port;
+      Addr    : I2C_10bit_Address;
+      Data    : I2C_Data;
+      Status  : out I2C_Status;
+      Timeout : Natural := 1000;
+      Stop    : Boolean := True) is abstract;
 
    -- Create I2C start condition.  Receive Data from the device
    -- (slave) at I2C_Address through the port This.  The number of
    -- expected bytes is determined by the length of Data.  Ends with
-   -- I2C stop condition.  Success or failure is reported in Status.
+   -- I2C stop condition if Stop is true.  Success or failure is
+   -- reported in Status.
    procedure Receive
      (This    : in out I2C_Master_Port;
       Addr    : I2C_7bit_Address;
       Data    : out I2C_Data;
       Status  : out I2C_Status;
-      Timeout : Natural := 1000) is abstract;
-
-   procedure Receive
-     (This    : in out I2C_Master_Port;
-      Addr    : I2C_8bit_Address;
-      Data    : out I2C_Data;
-      Status  : out I2C_Status;
-      Timeout : Natural := 1000) is abstract;
+      Timeout : Natural := 1000;
+      Stop    : Boolean := True) is abstract;
 
    procedure Receive
      (This    : in out I2C_Master_Port;
       Addr    : I2C_10bit_Address;
       Data    : out I2C_Data;
       Status  : out I2C_Status;
-      Timeout : Natural := 1000) is abstract;
+      Timeout : Natural := 1000;
+      Stop    : Boolean := True) is abstract;
+
+   --  unconditionally send a Stop condition
+   procedure Stop
+     (This    : in out I2C_Master_Port) is abstract;
+
+   --
+   --  The following routines are not strictly needed but provide
+   --  subprograms for typical scenarios and for backwar
+   --  compatitibility.
+   --
 
    -- Create I2C start condition.  Send the Send_Data to the device
    -- (slave) at I2C_Address through the port This.  The number of
@@ -117,19 +120,12 @@ package HAL.I2C.Master is
 
   procedure Transmit_And_Receive
      (This      : in out I2C_Master_Port;
-      Addr      : I2C_8Bit_Address;
-      Send_Data : I2C_Data;
-      Recv_Data : out I2C_Data;
-      Status    : out I2C_Status;
-      Timeout   : Natural := 1000) is abstract;
-
-  procedure Transmit_And_Receive
-     (This      : in out I2C_Master_Port;
       Addr      : I2C_10bit_Address;
       Send_Data : I2C_Data;
       Recv_Data : out I2C_Data;
       Status    : out I2C_Status;
       Timeout   : Natural := 1000) is abstract;
+
 
    -- The following routines first send Mem_Addr to the device
    -- (slave).  Mem_Addr is either one byte if Mem_Addr_Size =

@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                     Copyright (C) 2015-2016, 2022, AdaCore               --
+--                     Copyright (C) 2022, AdaCore                          --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -29,39 +29,48 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package HAL.I2C is
+package HAL.I2C.Slave is
    pragma Preelaborate;
 
-   type I2C_Status is
-     (Ok,
-      Error,
-      Timeout,
-      No_Connection,
-      Busy);
+   type I2C_Slave_Port is limited interface;
+   type Any_I2C_Slave_Port is access all I2C_Slave_Port'Class;
 
-   subtype I2C_Data is UInt8_Array;
+   --  The slave has to respond to several events.  Typically it must
+   --  either read from or write to the bus upon signal from the
+   --  master
+   type I2C_Slave_Events is (Request,  --  slave has to send data
+                             Receive,  --  slave has to receive data
+                             Restart); --  slave can be reset
 
-   -- 7 and 10-bit addressess are distinct types
-   type I2C_7bit_Address is new UInt7 range 8 .. 16#77#;
-   type I2C_10bit_Address is new UInt10;
+   type I2C_Action is access procedure;
 
-   --
-   --  Communication
-   --
-   --  Each slave device on the bus has a unique address. The
-   --  communication starts with the Start condition, followed by the
-   --  7-bit slave address and the data direction bit. If this bit is
-   --  0 then the master will write to the slave device. Otherwise, if
-   --  the data direction bit is 1, the master will read from slave
-   --  device. After the slave address and the data direction is sent,
-   --  the master can continue with reading or writing. The
-   --  communication is ended with the Stop condition which also
-   --  signals that the I2C bus is free. If the master needs to
-   --  communicate with other slaves it can generate a repeated start
-   --  with another slave address without generation Stop condition.
-   --
-   --  All the bytes are transferred with the MSB bit shifted first.
+   type Event_Action is array (I2C_Slave_Events) of I2C_Action;
 
-   --  Explanations are from https://i2c.info/i2c-bus-specification
 
-end HAL.I2C;
+   procedure Configure
+     (This   : in out I2C_Slave_Port;
+      Addr   : I2C_7bit_Address;
+      Action : Event_Action) is abstract;
+
+   procedure Configure
+     (This   : in out I2C_Slave_Port;
+      Addr   : I2C_10bit_Address;
+      Action : Event_Action) is abstract;
+
+   --  Send the Data to the requester (master) through the port This.
+   --  The number of bytes is determined by the length of Data.
+   --  Success or failure is reported in Status.
+   procedure Transmit
+     (This   : in out I2C_Slave_Port;
+      Data   : I2C_Data;
+      Status : out I2C_Status) is abstract;
+
+   --  Read Data from the bus (master) through the port This.  The
+   --  number of bytes is determined by the length of Data.  Success
+   --  or failure is reported in Status.
+   procedure Receive
+     (This   : in out I2C_Slave_Port;
+      Data   : out I2C_Data;
+      Status : out I2C_Status) is abstract;
+
+end HAL.I2C.Slave;
