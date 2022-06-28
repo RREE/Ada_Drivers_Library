@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                  Copyright (C) 2015-2022, AdaCore                        --
+--                    Copyright (C) 2022, AdaCore                      --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -29,22 +29,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with STM32.Device;       use STM32.Device;
+package body PCF8574 is
 
-with Serial_IO.Blocking;
+   -----------
+   --  Get  --
+   -----------
 
-use Serial_IO;
+   function Get (This : PCF8574_Module) return UInt8
+   is
+      Val    : I2C_Data (1 .. 1);
+      Status : I2C_Status;
+   begin
+      This.Port.Master_Receive (This.Addr, Val, Status);
+      return Val (1);
+   end Get;
 
-package Peripherals_Blocking is
+   procedure Get (This : PCF8574_Module; Data : out UInt8)
+   is begin
+      Data := Get (This);
+   end Get;
 
-   --  the USART selection is arbitrary but the AF number and the pins must
-   --  be those required by that USART
-   Peripheral : aliased Serial_IO.Peripheral_Descriptor :=
-                  (Transceiver    => USART_1'Access,
-                   Transceiver_AF => GPIO_AF_USART1_7,
-                   Tx_Pin         => PB6,
-                   Rx_Pin         => PB7);
+   -----------
+   --  Set  --
+   -----------
 
-   COM : Blocking.Serial_Port (Peripheral'Access);
+   procedure Set (This : PCF8574_Module; Data : UInt8)
+   is
+      Status : I2C_Status;
+   begin
+      This.Port.Master_Transmit (This.Addr, (1 => Data), Status);
+   end Set;
 
-end Peripherals_Blocking;
+end PCF8574;

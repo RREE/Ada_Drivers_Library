@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                    Copyright (C) 2015-2016, AdaCore                      --
+--                    Copyright (C) 2015-2022, AdaCore                      --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -53,20 +53,18 @@ procedure Demo_Serial_Port_Blocking is
    procedure Send (This : String) is
    begin
       Set (Outgoing, To => This);
-      Blocking.Put (COM, Outgoing'Unchecked_Access);
-      --  No need to wait for it here because the Put won't return until the
-      --  message has been sent
+      Blocking.Send (COM, Outgoing'Unchecked_Access);
+      --  Send won't return until the entire message has been sent
    end Send;
 
 begin
-   Initialize (COM);
+   Initialize_Hardware (COM);
    Configure (COM, Baud_Rate => 115_200);
 
+   Incoming.Set_Terminator (To => ASCII.CR);
    Send ("Enter text, terminated by CR.");
-
-   Set_Terminator (Incoming, To => ASCII.CR);
    loop
-      Get (COM, Incoming'Unchecked_Access);
-      Send ("Received : " & Content (Incoming));
+      Blocking.Receive (COM, Incoming'Unchecked_Access);
+      Send ("Received : " & Incoming.Content);
    end loop;
 end Demo_Serial_Port_Blocking;

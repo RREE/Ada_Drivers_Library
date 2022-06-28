@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
---                  Copyright (C) 2015-2022, AdaCore                        --
+--                    Copyright (C) 2022, AdaCore                      --
 --                                                                          --
 --  Redistribution and use in source and binary forms, with or without      --
 --  modification, are permitted provided that the following conditions are  --
@@ -29,22 +29,42 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with STM32.Device;       use STM32.Device;
+--  sample definitions for custom characters
 
-with Serial_IO.Blocking;
+package LCD_HD44780.Custom_Characters is
 
-use Serial_IO;
+   --
+   --  Sample Custom Characters
+   --
 
-package Peripherals_Blocking is
+   Filled_Heart : constant Custom_Character_Definition :=
+     (2#00000#,
+      2#00000#,
+      2#01010#,
+      2#11111#,
+      2#11111#,
+      2#11111#,
+      2#01110#,
+      2#00100#);
 
-   --  the USART selection is arbitrary but the AF number and the pins must
-   --  be those required by that USART
-   Peripheral : aliased Serial_IO.Peripheral_Descriptor :=
-                  (Transceiver    => USART_1'Access,
-                   Transceiver_AF => GPIO_AF_USART1_7,
-                   Tx_Pin         => PB6,
-                   Rx_Pin         => PB7);
+   Open_Heart : constant Custom_Character_Definition :=
+     (2#00000#,
+      2#00000#,
+      2#01010#,
+      2#10101#,
+      2#10001#,
+      2#10001#,
+      2#01010#,
+      2#00100#);
 
-   COM : Blocking.Serial_Port (Peripheral'Access);
+   Thermometer : constant Custom_Character_Definition :=
+     (2#00100#,
+      2#01010#,
+      2#01010#,
+      2#01010#,
+      2#01010#,
+      2#10001#,
+      2#10001#,
+      2#01110#);
 
-end Peripherals_Blocking;
+end LCD_HD44780.Custom_Characters;
