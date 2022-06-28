@@ -29,48 +29,48 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package HAL.I2C.Slave is
+package HAL.I2C.Target is
    pragma Preelaborate;
 
-   type I2C_Slave_Port is limited interface;
-   type Any_I2C_Slave_Port is access all I2C_Slave_Port'Class;
+   type I2C_Target_Port is limited interface;
+   type Any_I2C_Target_Port is access all I2C_Target_Port'Class;
 
-   --  The slave has to respond to several events.  Typically it must
+   --  The target has to respond to several events.  Typically it must
    --  either read from or write to the bus upon signal from the
-   --  master
-   type I2C_Slave_Events is (Request,  --  slave has to send data
-                             Receive,  --  slave has to receive data
-                             Restart); --  slave can be reset
+   --  controller
+   type I2C_Target_Events is (Request,  --  target has to transmit data
+                              Receive,  --  target has to receive data
+                              Restart); --  target can be reset
 
    type I2C_Action is access procedure;
 
-   type Event_Action is array (I2C_Slave_Events) of I2C_Action;
+   type Event_Action is array (I2C_Target_Events) of I2C_Action;
 
 
    procedure Configure
-     (This   : in out I2C_Slave_Port;
+     (This   : in out I2C_Target_Port;
       Addr   : I2C_7bit_Address;
       Action : Event_Action) is abstract;
 
    procedure Configure
-     (This   : in out I2C_Slave_Port;
+     (This   : in out I2C_Target_Port;
       Addr   : I2C_10bit_Address;
       Action : Event_Action) is abstract;
 
-   --  Send the Data to the requester (master) through the port This.
+   --  Send the Data to the requester (controller) through the port This.
    --  The number of bytes is determined by the length of Data.
    --  Success or failure is reported in Status.
    procedure Transmit
-     (This   : in out I2C_Slave_Port;
+     (This   : in out I2C_Target_Port;
       Data   : I2C_Data;
       Status : out I2C_Status) is abstract;
 
-   --  Read Data from the bus (master) through the port This.  The
+   --  Read Data from the bus (controller) through the port This.  The
    --  number of bytes is determined by the length of Data.  Success
    --  or failure is reported in Status.
    procedure Receive
-     (This   : in out I2C_Slave_Port;
+     (This   : in out I2C_Target_Port;
       Data   : out I2C_Data;
       Status : out I2C_Status) is abstract;
 
-end HAL.I2C.Slave;
+end HAL.I2C.Target;
